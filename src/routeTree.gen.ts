@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ManageDataRouteImport } from './routes/manage-data'
+import { Route as SocialAdsRouteImport } from './routes/social-ads'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManageDataRoute = ManageDataRouteImport.update({
+  id: '/manage-data',
+  path: '/manage-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SocialAdsRoute = SocialAdsRouteImport.update({
+  id: '/social-ads',
+  path: '/social-ads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/manage-data': typeof ManageDataRoute
+  '/social-ads': typeof SocialAdsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/manage-data': typeof ManageDataRoute
+  '/social-ads': typeof SocialAdsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/manage-data': typeof ManageDataRoute
+  '/social-ads': typeof SocialAdsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/manage-data' | '/social-ads'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/manage-data' | '/social-ads'
+  id: '__root__' | '/' | '/manage-data' | '/social-ads'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ManageDataRoute: typeof ManageDataRoute
+  SocialAdsRoute: typeof SocialAdsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manage-data': {
+      id: '/manage-data'
+      path: '/manage-data'
+      fullPath: '/manage-data'
+      preLoaderRoute: typeof ManageDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/social-ads': {
+      id: '/social-ads'
+      path: '/social-ads'
+      fullPath: '/social-ads'
+      preLoaderRoute: typeof SocialAdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ManageDataRoute: ManageDataRoute,
+  SocialAdsRoute: SocialAdsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
