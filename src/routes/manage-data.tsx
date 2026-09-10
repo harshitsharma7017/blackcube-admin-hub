@@ -116,7 +116,12 @@ function ManageDataPage() {
     search.q !== "" || search.link !== "all" || search.download !== "all" || search.date !== "all";
 
   const resetFilters = () =>
-    setSearch({ q: DEFAULTS.q, link: DEFAULTS.link, download: DEFAULTS.download, date: DEFAULTS.date });
+    setSearch({
+      q: DEFAULTS.q,
+      link: DEFAULTS.link,
+      download: DEFAULTS.download,
+      date: DEFAULTS.date,
+    });
 
   const toggle = (id: string) =>
     setSelected((prev) => {

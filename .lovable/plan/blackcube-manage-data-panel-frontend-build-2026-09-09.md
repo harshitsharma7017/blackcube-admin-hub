@@ -5,12 +5,14 @@ A production-quality admin panel front end for managing people records imported 
 ## What gets built
 
 **Pages**
+
 - Dashboard — overview with counts and quick links.
 - Manage Data — the main screen: summary cards, category tabs, search + filters, data table, pagination, edit and delete dialogs.
 - Upload Excel — multi-step import wizard (choose file → validate → map columns → preview → confirm).
 - Social & Ads — placeholder page so navigation is complete.
 
 **Manage Data screen**
+
 - Summary cards: All Data, Students, Teachers, Institutes with live counts.
 - Tabs: All Data, Students, Teachers, Mentors, Job Seekers, Institutes, Others.
 - Search by name, email or phone.
@@ -20,12 +22,14 @@ A production-quality admin panel front end for managing people records imported 
 - Result count line and pagination with correct serial numbering across pages.
 
 **Upload wizard**
+
 - Drag-and-drop or browse; accepts .xlsx, .xls, .csv with a size limit.
 - Parses the file, normalises headers, lets the admin map spreadsheet columns to the canonical fields.
 - Row-by-row validation with a clear per-row error list, valid-row preview, then confirmed import.
 - After import, the Manage Data screen and counts refresh automatically.
 
 **States and quality**
+
 - Loading skeletons that hold layout, empty state pointing to Upload Excel, no-results state with Reset Filters, success toasts, readable errors with retry.
 - Responsive: full sidebar on desktop, compact on tablet, drawer navigation and scrollable table region on mobile; no horizontal page overflow.
 - Accessible: semantic labels, keyboard navigation, visible focus, accessible dialogs, status shown with text and icon rather than colour alone.

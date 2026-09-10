@@ -297,7 +297,10 @@ export function UploadWizard() {
             {[
               { label: "Rows in file", value: validation.totalRows },
               { label: "Valid rows", value: validation.validRows.length },
-              { label: "Rows with errors", value: validation.totalRows - validation.validRows.length },
+              {
+                label: "Rows with errors",
+                value: validation.totalRows - validation.validRows.length,
+              },
             ].map((stat) => (
               <Card key={stat.label}>
                 <CardContent className="p-5">
@@ -361,7 +364,9 @@ export function UploadWizard() {
                         <TableCell className="max-w-52 truncate text-muted-foreground">
                           {row.address || "—"}
                         </TableCell>
-                        <TableCell className="max-w-44 truncate">{row.organisation || "—"}</TableCell>
+                        <TableCell className="max-w-44 truncate">
+                          {row.organisation || "—"}
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">{row.type}</TableCell>
                       </TableRow>
                     ))}
@@ -412,7 +417,12 @@ export function UploadWizard() {
             </p>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               <Button asChild>
-                <Link to="/manage-data">View records</Link>
+                <Link
+                  to="/manage-data"
+                  search={{ tab: "all", q: "", link: "all", download: "all", date: "all", page: 1 }}
+                >
+                  View records
+                </Link>
               </Button>
               <Button variant="outline" onClick={reset}>
                 Import another file

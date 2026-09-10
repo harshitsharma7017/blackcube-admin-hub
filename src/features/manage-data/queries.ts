@@ -1,6 +1,12 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ListRecordsQuery, RecordInput } from "@/types/record";
-import { commitImport, deleteRecord, getSummary, listRecords, updateRecord } from "@/services/records-service";
+import {
+  commitImport,
+  deleteRecord,
+  getSummary,
+  listRecords,
+  updateRecord,
+} from "@/services/records-service";
 
 export const recordKeys = {
   root: ["records"] as const,

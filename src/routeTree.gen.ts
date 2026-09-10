@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManageDataRouteImport } from './routes/manage-data'
 import { Route as SocialAdsRouteImport } from './routes/social-ads'
+import { Route as UploadExcelRouteImport } from './routes/upload-excel'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const SocialAdsRoute = SocialAdsRouteImport.update({
   path: '/social-ads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UploadExcelRoute = UploadExcelRouteImport.update({
+  id: '/upload-excel',
+  path: '/upload-excel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/manage-data': typeof ManageDataRoute
   '/social-ads': typeof SocialAdsRoute
+  '/upload-excel': typeof UploadExcelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/manage-data': typeof ManageDataRoute
   '/social-ads': typeof SocialAdsRoute
+  '/upload-excel': typeof UploadExcelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/manage-data': typeof ManageDataRoute
   '/social-ads': typeof SocialAdsRoute
+  '/upload-excel': typeof UploadExcelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/manage-data' | '/social-ads'
+  fullPaths: '/' | '/manage-data' | '/social-ads' | '/upload-excel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/manage-data' | '/social-ads'
-  id: '__root__' | '/' | '/manage-data' | '/social-ads'
+  to: '/' | '/manage-data' | '/social-ads' | '/upload-excel'
+  id: '__root__' | '/' | '/manage-data' | '/social-ads' | '/upload-excel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ManageDataRoute: typeof ManageDataRoute
   SocialAdsRoute: typeof SocialAdsRoute
+  UploadExcelRoute: typeof UploadExcelRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SocialAdsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/upload-excel': {
+      id: '/upload-excel'
+      path: '/upload-excel'
+      fullPath: '/upload-excel'
+      preLoaderRoute: typeof UploadExcelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ManageDataRoute: ManageDataRoute,
   SocialAdsRoute: SocialAdsRoute,
+  UploadExcelRoute: UploadExcelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

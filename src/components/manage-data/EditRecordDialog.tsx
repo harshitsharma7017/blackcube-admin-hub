@@ -32,7 +32,7 @@ import {
   type RecordInput,
 } from "@/types/record";
 
-function FieldError({ id, message }: { id: string; message?: string }) {
+function FieldError({ id, message }: { id: string; message?: string | undefined }) {
   if (!message) return null;
   return (
     <p id={id} role="alert" className="text-xs font-medium text-destructive">
@@ -57,7 +57,7 @@ export function EditRecordDialog({
     watch,
     formState: { errors },
   } = useForm<RecordInput>({
-    resolver: zodResolver(recordInputSchema),
+    resolver: zodResolver(recordInputSchema) as never,
     defaultValues: {
       name: "",
       email: "",
@@ -84,7 +84,7 @@ export function EditRecordDialog({
     });
   }, [record, reset]);
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = handleSubmit(async (values: RecordInput) => {
     if (!record) return;
     try {
       await mutation.mutateAsync({ id: record.id, input: values });
@@ -159,7 +159,10 @@ export function EditRecordDialog({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="type">Type</Label>
-              <Select value={type} onValueChange={(v) => setValue("type", v as RecordInput["type"])}>
+              <Select
+                value={type}
+                onValueChange={(v) => setValue("type", v as RecordInput["type"])}
+              >
                 <SelectTrigger id="type">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>

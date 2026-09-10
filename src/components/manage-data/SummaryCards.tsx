@@ -14,7 +14,7 @@ export function SummaryCards({
   data,
   isLoading,
 }: {
-  data?: SummaryCounts;
+  data?: SummaryCounts | undefined;
   isLoading: boolean;
 }) {
   return (

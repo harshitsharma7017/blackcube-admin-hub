@@ -65,7 +65,12 @@ export function AppShell({ title, description, actions, children }: AppShellProp
           <div className="flex items-start gap-3 px-4 py-4 sm:px-6">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open navigation menu">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="lg:hidden"
+                  aria-label="Open navigation menu"
+                >
                   <Menu className="size-5" aria-hidden="true" />
                 </Button>
               </SheetTrigger>

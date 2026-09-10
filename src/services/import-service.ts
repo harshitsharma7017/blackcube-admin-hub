@@ -75,9 +75,7 @@ export async function parseImportFile(file: File): Promise<ParsedFile> {
     throw new ApiError("The file needs a header row and at least one data row.", 422);
   }
 
-  const headers = (matrix[0] ?? [])
-    .map((h) => String(h ?? "").trim())
-    .filter((h) => h.length > 0);
+  const headers = (matrix[0] ?? []).map((h) => String(h ?? "").trim()).filter((h) => h.length > 0);
   if (headers.length === 0) throw new ApiError("No column headers were found.", 422);
 
   const rows = matrix.slice(1).map((row) => {

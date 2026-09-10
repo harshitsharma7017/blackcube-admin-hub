@@ -41,7 +41,7 @@ interface RecordsTableProps {
   records: DataRecord[];
   isLoading: boolean;
   isError: boolean;
-  errorMessage?: string;
+  errorMessage?: string | undefined;
   onRetry: () => void;
   startIndex: number;
   selected: Set<string>;
@@ -146,7 +146,10 @@ export function RecordsTable(props: RecordsTableProps) {
                 />
               </TableHead>
               {COLUMNS.slice(1).map((c) => (
-                <TableHead key={c} className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide">
+                <TableHead
+                  key={c}
+                  className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide"
+                >
                   {c}
                 </TableHead>
               ))}
@@ -164,7 +167,10 @@ export function RecordsTable(props: RecordsTableProps) {
                   </TableRow>
                 ))
               : records.map((record, index) => (
-                  <TableRow key={record.id} data-state={selected.has(record.id) ? "selected" : undefined}>
+                  <TableRow
+                    key={record.id}
+                    data-state={selected.has(record.id) ? "selected" : undefined}
+                  >
                     <TableCell>
                       <Checkbox
                         checked={selected.has(record.id)}
@@ -181,7 +187,9 @@ export function RecordsTable(props: RecordsTableProps) {
                     <TableCell className="max-w-56 truncate text-muted-foreground">
                       {record.address || "—"}
                     </TableCell>
-                    <TableCell className="max-w-44 truncate">{record.organisation || "—"}</TableCell>
+                    <TableCell className="max-w-44 truncate">
+                      {record.organisation || "—"}
+                    </TableCell>
                     <TableCell className="whitespace-nowrap">{record.type}</TableCell>
                     <TableCell>
                       <LinkStatusBadge status={record.linkStatus} />

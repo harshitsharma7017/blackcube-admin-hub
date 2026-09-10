@@ -8,8 +8,14 @@ const base =
 export function LinkStatusBadge({ status }: { status: LinkStatus }) {
   const map = {
     Sent: { cls: "border-success/30 bg-success/10 text-success", Icon: CheckCircle2 },
-    Pending: { cls: "border-warning/40 bg-warning/10 text-warning-foreground dark:text-warning", Icon: Clock },
-    Failed: { cls: "border-destructive/30 bg-destructive/10 text-destructive", Icon: AlertTriangle },
+    Pending: {
+      cls: "border-warning/40 bg-warning/10 text-warning-foreground dark:text-warning",
+      Icon: Clock,
+    },
+    Failed: {
+      cls: "border-destructive/30 bg-destructive/10 text-destructive",
+      Icon: AlertTriangle,
+    },
   } as const;
   const { cls, Icon } = map[status];
   return (
