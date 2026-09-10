@@ -105,6 +105,8 @@ function DashboardPage() {
                       download: "all",
                       date: "all",
                       page: 1,
+                      sort: "",
+                      order: "",
                     }}
                   >
                     Open
@@ -152,7 +154,16 @@ function DashboardPage() {
             <Button variant="link" size="sm" className="text-primary" asChild>
               <Link
                 to="/manage-data"
-                search={{ tab: "all", q: "", link: "all", download: "all", date: "all", page: 1 }}
+                search={{
+                  tab: "all",
+                  q: "",
+                  link: "all",
+                  download: "all",
+                  date: "all",
+                  page: 1,
+                  sort: "",
+                  order: "",
+                }}
               >
                 View all
                 <ArrowRight className="size-4" aria-hidden="true" />

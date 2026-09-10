@@ -419,7 +419,16 @@ export function UploadWizard() {
               <Button asChild>
                 <Link
                   to="/manage-data"
-                  search={{ tab: "all", q: "", link: "all", download: "all", date: "all", page: 1 }}
+                  search={{
+                    tab: "all",
+                    q: "",
+                    link: "all",
+                    download: "all",
+                    date: "all",
+                    page: 1,
+                    sort: "",
+                    order: "",
+                  }}
                 >
                   View records
                 </Link>

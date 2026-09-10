@@ -23,6 +23,7 @@ import {
   type DownloadStatus,
   type LinkStatus,
   type RecordType,
+  type SortableField,
 } from "@/types/record";
 
 const PAGE_SIZE = 10;
@@ -34,6 +35,8 @@ interface ManageDataSearch {
   download: string;
   date: string;
   page: number;
+  sort: string;
+  order: string;
 }
 
 const DEFAULTS: ManageDataSearch = {
@@ -43,6 +46,8 @@ const DEFAULTS: ManageDataSearch = {
   download: "all",
   date: "all",
   page: 1,
+  sort: "",
+  order: "",
 };
 
 export const Route = createFileRoute("/manage-data")({
@@ -55,6 +60,8 @@ export const Route = createFileRoute("/manage-data")({
       download: String(search["download"] ?? "all"),
       date: String(search["date"] ?? "all"),
       page: Math.max(1, Number(search["page"] ?? 1) || 1),
+      sort: String(search["sort"] ?? ""),
+      order: String(search["order"] ?? ""),
     };
   },
   head: () => ({
@@ -106,6 +113,8 @@ function ManageDataPage() {
       linkStatus: search.link as LinkStatus | "all",
       downloadStatus: search.download as DownloadStatus | "all",
       dateAdded: search.date as "all" | "today" | "7d" | "30d",
+      sortBy: (search.sort as SortableField) || undefined,
+      sortOrder: (search.order as "asc" | "desc") || undefined,
     }),
   );
   const summary = useQuery(summaryQuery());
@@ -142,6 +151,15 @@ function ManageDataPage() {
       records.forEach((r) => (allSelected ? next.delete(r.id) : next.add(r.id)));
       return next;
     });
+
+  const handleSort = (field: string) => {
+    let nextOrder = "asc";
+    if (search.sort === field) {
+      if (search.order === "asc") nextOrder = "desc";
+      else nextOrder = "asc";
+    }
+    setSearch({ sort: field, order: nextOrder, page: 1 });
+  };
 
   return (
     <AppShell
@@ -211,6 +229,9 @@ function ManageDataPage() {
           onDelete={setDeleting}
           hasFilters={hasFilters}
           onResetFilters={resetFilters}
+          sortBy={search.sort as SortableField}
+          sortOrder={search.order as "asc" | "desc"}
+          onSort={handleSort}
         />
 
         <TablePagination

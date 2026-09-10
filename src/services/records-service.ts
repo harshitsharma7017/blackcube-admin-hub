@@ -72,6 +72,9 @@ export async function listRecords(query: ListRecordsQuery): Promise<Paginated<Da
   const dateParams = dateRangeParams(query.dateAdded);
   Object.assign(params, dateParams);
 
+  if (query.sortBy) params["sortBy"] = query.sortBy;
+  if (query.sortOrder) params["sortOrder"] = query.sortOrder;
+
   const res = await http.get("/records", { params });
 
   const items: DataRecord[] = (res.data.data as Record<string, unknown>[]).map(toFrontendRecord);

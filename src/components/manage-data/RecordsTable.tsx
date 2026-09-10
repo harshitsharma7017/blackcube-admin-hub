@@ -1,5 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { AlertCircle, Inbox, Pencil, SearchX, Trash2, UploadCloud } from "lucide-react";
+import {
+  AlertCircle,
+  Inbox,
+  Pencil,
+  SearchX,
+  Trash2,
+  UploadCloud,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,22 +21,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { DataRecord } from "@/types/record";
+import type { DataRecord, SortableField } from "@/types/record";
 import { DownloadStatusBadge, LinkStatusBadge } from "./StatusBadge";
 
-const COLUMNS = [
-  "Select",
-  "S.N.",
-  "Name",
-  "Email",
-  "Phone",
-  "Address",
-  "Organisation",
-  "Type",
-  "Link Status",
-  "Download Status",
-  "Added On",
-  "Action",
+const SORTABLE_COLUMNS: {
+  label: string;
+  sortField?: SortableField;
+}[] = [
+  { label: "Name", sortField: "name" },
+  { label: "Email", sortField: "email" },
+  { label: "Phone", sortField: "phoneNumber" },
+  { label: "Address", sortField: "address" },
+  { label: "Organisation", sortField: "organisation" },
+  { label: "Type", sortField: "type" },
+  { label: "Link Status", sortField: "linkStatus" },
+  { label: "Download Status", sortField: "downloadStatus" },
+  { label: "Added On", sortField: "dateAdded" },
 ];
 
 function formatDate(iso: string) {
@@ -51,6 +61,9 @@ interface RecordsTableProps {
   onDelete: (record: DataRecord) => void;
   hasFilters: boolean;
   onResetFilters: () => void;
+  sortBy?: SortableField;
+  sortOrder?: "asc" | "desc";
+  onSort?: (field: SortableField) => void;
 }
 
 function StateBlock({
@@ -88,6 +101,9 @@ export function RecordsTable(props: RecordsTableProps) {
     onDelete,
     hasFilters,
     onResetFilters,
+    sortBy,
+    sortOrder,
+    onSort,
   } = props;
 
   const allSelected = records.length > 0 && records.every((r) => selected.has(r.id));
@@ -145,22 +161,56 @@ export function RecordsTable(props: RecordsTableProps) {
                   disabled={isLoading || records.length === 0}
                 />
               </TableHead>
-              {COLUMNS.slice(1).map((c) => (
-                <TableHead
-                  key={c}
-                  className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide"
-                >
-                  {c}
-                </TableHead>
-              ))}
+              <TableHead className="w-12 whitespace-nowrap text-xs font-semibold uppercase tracking-wide">
+                S.N.
+              </TableHead>
+              {SORTABLE_COLUMNS.map((col) => {
+                const isActive = sortBy === col.sortField;
+                return (
+                  <TableHead
+                    key={col.label}
+                    className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide group"
+                    aria-sort={
+                      isActive ? (sortOrder === "asc" ? "ascending" : "descending") : "none"
+                    }
+                  >
+                    {col.sortField ? (
+                      <button
+                        type="button"
+                        onClick={() => onSort?.(col.sortField!)}
+                        className="-ml-2 flex items-center gap-1 rounded-md px-2 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        {col.label}
+                        {isActive ? (
+                          sortOrder === "asc" ? (
+                            <ArrowUp className="size-3.5" aria-hidden="true" />
+                          ) : (
+                            <ArrowDown className="size-3.5" aria-hidden="true" />
+                          )
+                        ) : (
+                          <ArrowUpDown
+                            className="size-3.5 opacity-0 transition-opacity group-hover:opacity-50"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </button>
+                    ) : (
+                      col.label
+                    )}
+                  </TableHead>
+                );
+              })}
+              <TableHead className="w-20 whitespace-nowrap text-xs font-semibold uppercase tracking-wide">
+                Action
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading
               ? Array.from({ length: 8 }, (_, i) => (
                   <TableRow key={`skeleton-${i}`}>
-                    {COLUMNS.map((c) => (
-                      <TableCell key={c}>
+                    {Array.from({ length: 12 }).map((_, colIdx) => (
+                      <TableCell key={colIdx}>
                         <Skeleton className="h-5 w-full min-w-14" />
                       </TableCell>
                     ))}
