@@ -1,119 +1,124 @@
 import {
-  ApiError,
   type DataRecord,
   type ImportResult,
   type ListRecordsQuery,
   type Paginated,
   type RecordInput,
   type SummaryCounts,
-  recordInputSchema,
 } from "@/types/record";
-import { newId, readAll, writeAll } from "./mock-store";
+import { http } from "./http";
 
-/**
- * Mock implementation of the Manage Data REST contract.
- * Every function is async, server-shaped (query in / DTO out) and mirrors the
- * endpoints the Express + Mongoose API will expose:
- *   GET    /records            -> listRecords
- *   GET    /records/summary    -> getSummary
- *   PATCH  /records/:id        -> updateRecord
- *   DELETE /records/:id        -> deleteRecord
- *   POST   /import/commit      -> commitImport
- */
+/* ───────────────────────────────────────────────
+ * Helpers: map between frontend and backend shapes
+ * ─────────────────────────────────────────────── */
 
-const latency = (ms = 260) => new Promise((r) => setTimeout(r, ms));
-
-function withinDate(iso: string, range: ListRecordsQuery["dateAdded"]) {
-  if (!range || range === "all") return true;
-  const days = range === "today" ? 1 : range === "7d" ? 7 : 30;
-  return Date.now() - new Date(iso).getTime() <= days * 24 * 60 * 60 * 1000;
+/** Backend returns `phoneNumber`; frontend uses `phone`.
+ *  Backend returns `dateAdded`; frontend uses `createdAt`. */
+function toFrontendRecord(raw: Record<string, unknown>): DataRecord {
+  return {
+    id: String(raw["id"] ?? raw["_id"] ?? ""),
+    name: String(raw["name"] ?? ""),
+    email: String(raw["email"] ?? ""),
+    phone: String(raw["phoneNumber"] ?? raw["phone"] ?? ""),
+    address: String(raw["address"] ?? ""),
+    organisation: String(raw["organisation"] ?? ""),
+    type: raw["type"] as DataRecord["type"],
+    linkStatus: raw["linkStatus"] as DataRecord["linkStatus"],
+    downloadStatus: raw["downloadStatus"] as DataRecord["downloadStatus"],
+    createdAt: String(raw["dateAdded"] ?? raw["createdAt"] ?? new Date().toISOString()),
+  };
 }
 
-export async function listRecords(query: ListRecordsQuery): Promise<Paginated<DataRecord>> {
-  await latency();
-  const search = query.search?.trim().toLowerCase() ?? "";
-  const filtered = readAll()
-    .filter((r) => (query.type ? r.type === query.type : true))
-    .filter((r) =>
-      search
-        ? r.name.toLowerCase().includes(search) ||
-          r.email.toLowerCase().includes(search) ||
-          r.phone.toLowerCase().includes(search)
-        : true,
-    )
-    .filter((r) =>
-      query.linkStatus && query.linkStatus !== "all" ? r.linkStatus === query.linkStatus : true,
-    )
-    .filter((r) =>
-      query.downloadStatus && query.downloadStatus !== "all"
-        ? r.downloadStatus === query.downloadStatus
-        : true,
-    )
-    .filter((r) => withinDate(r.createdAt, query.dateAdded))
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+/** Frontend sends `phone`; backend update schema expects `phoneNumber`. */
+function toBackendInput(input: RecordInput): Record<string, unknown> {
+  return {
+    name: input.name,
+    email: input.email,
+    phoneNumber: input.phone,
+    address: input.address,
+    organisation: input.organisation,
+    type: input.type,
+    linkStatus: input.linkStatus,
+    downloadStatus: input.downloadStatus,
+  };
+}
 
-  const pageSize = Math.max(1, query.pageSize);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const page = Math.min(Math.max(1, query.page), totalPages);
-  const start = (page - 1) * pageSize;
+/** Convert frontend relative date filter to backend ISO dateFrom/dateTo. */
+function dateRangeParams(dateAdded?: ListRecordsQuery["dateAdded"]): Record<string, string> {
+  if (!dateAdded || dateAdded === "all") return {};
+  const now = new Date();
+  const to = now.toISOString();
+  const days = dateAdded === "today" ? 1 : dateAdded === "7d" ? 7 : 30;
+  const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+  return { dateFrom: from, dateTo: to };
+}
+
+/* ───────────────────────────────────────────────
+ * API functions (same signatures as the old mock)
+ * ─────────────────────────────────────────────── */
+
+export async function listRecords(query: ListRecordsQuery): Promise<Paginated<DataRecord>> {
+  const params: Record<string, string | number> = {
+    page: query.page,
+    pageSize: query.pageSize,
+  };
+
+  if (query.search) params["search"] = query.search;
+  if (query.type) params["category"] = query.type;
+  if (query.linkStatus && query.linkStatus !== "all") params["linkStatus"] = query.linkStatus;
+  if (query.downloadStatus && query.downloadStatus !== "all")
+    params["downloadStatus"] = query.downloadStatus;
+
+  const dateParams = dateRangeParams(query.dateAdded);
+  Object.assign(params, dateParams);
+
+  const res = await http.get("/records", { params });
+
+  const items: DataRecord[] = (res.data.data as Record<string, unknown>[]).map(toFrontendRecord);
+  const meta = res.data.meta as {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 
   return {
-    items: filtered.slice(start, start + pageSize),
-    total: filtered.length,
-    page,
-    pageSize,
-    totalPages,
+    items,
+    total: meta.total,
+    page: meta.page,
+    pageSize: meta.pageSize,
+    totalPages: meta.totalPages,
   };
 }
 
 export async function getSummary(): Promise<SummaryCounts> {
-  await latency(180);
-  const all = readAll();
-  const count = (t: string) => all.filter((r) => r.type === t).length;
-  return {
-    all: all.length,
-    students: count("Student"),
-    teachers: count("Teacher"),
-    institutes: count("Institute"),
-    mentors: count("Mentor"),
-    jobSeekers: count("Job Seeker"),
-    others: count("Other"),
-  };
+  const res = await http.get("/summary");
+  return res.data.data as SummaryCounts;
 }
 
 export async function updateRecord(id: string, input: RecordInput): Promise<DataRecord> {
-  await latency(420);
-  const parsed = recordInputSchema.safeParse(input);
-  if (!parsed.success) {
-    throw new ApiError(parsed.error.issues[0]?.message ?? "Validation failed", 422);
-  }
-  const all = readAll();
-  const index = all.findIndex((r) => r.id === id);
-  if (index === -1) throw new ApiError("Record no longer exists", 404);
-  const updated: DataRecord = { ...all[index]!, ...parsed.data };
-  const next = [...all];
-  next[index] = updated;
-  writeAll(next);
-  return updated;
+  const res = await http.patch(`/records/${id}`, toBackendInput(input));
+  return toFrontendRecord(res.data.data as Record<string, unknown>);
 }
 
 export async function deleteRecord(id: string): Promise<{ id: string }> {
-  await latency(380);
-  const all = readAll();
-  if (!all.some((r) => r.id === id)) throw new ApiError("Record no longer exists", 404);
-  writeAll(all.filter((r) => r.id !== id));
+  await http.delete(`/records/${id}`);
   return { id };
 }
 
 export async function commitImport(rows: RecordInput[]): Promise<ImportResult> {
-  await latency(700);
-  if (rows.length === 0) throw new ApiError("There are no valid rows to import", 422);
-  const createdAt = new Date().toISOString();
-  const inserted: DataRecord[] = rows.map((row) => ({
-    id: newId(),
-    ...recordInputSchema.parse(row),
-    createdAt,
+  // Convert frontend phone → backend phoneNumber for each row
+  const backendRows = rows.map((row) => ({
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    address: row.address,
+    organisation: row.organisation,
+    type: row.type,
+    linkStatus: row.linkStatus,
+    downloadStatus: row.downloadStatus,
   }));
-  writeAll([...inserted, ...readAll()]);
-  return { inserted: inserted.length };
+
+  const res = await http.post("/import", backendRows);
+  return res.data.data as ImportResult;
 }
