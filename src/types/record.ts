@@ -65,7 +65,20 @@ export interface ListRecordsQuery {
   linkStatus?: LinkStatus | "all";
   downloadStatus?: DownloadStatus | "all";
   dateAdded?: "all" | "today" | "7d" | "30d";
+  sortBy?: SortableField;
+  sortOrder?: "asc" | "desc";
 }
+
+export type SortableField =
+  | "name"
+  | "email"
+  | "phoneNumber"
+  | "address"
+  | "organisation"
+  | "type"
+  | "linkStatus"
+  | "downloadStatus"
+  | "dateAdded";
 
 export interface Paginated<T> {
   items: T[];

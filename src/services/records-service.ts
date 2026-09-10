@@ -106,6 +106,25 @@ export async function deleteRecord(id: string): Promise<{ id: string }> {
   return { id };
 }
 
+export async function bulkDeleteRecords(ids: string[]): Promise<{ deletedCount: number }> {
+  const res = await http.delete("/records/bulk", { data: { ids } });
+  return res.data.data as { deletedCount: number };
+}
+
+export async function bulkUpdateRecords(
+  ids: string[],
+  updates: Partial<RecordInput>,
+): Promise<{ modifiedCount: number }> {
+  const backendUpdates: Record<string, unknown> = {};
+  if (updates.type !== undefined) backendUpdates["type"] = updates.type;
+  if (updates.linkStatus !== undefined) backendUpdates["linkStatus"] = updates.linkStatus;
+  if (updates.downloadStatus !== undefined)
+    backendUpdates["downloadStatus"] = updates.downloadStatus;
+
+  const res = await http.patch("/records/bulk", { ids, updates: backendUpdates });
+  return res.data.data as { modifiedCount: number };
+}
+
 export async function commitImport(rows: RecordInput[]): Promise<ImportResult> {
   // Convert frontend phone → backend phoneNumber for each row
   const backendRows = rows.map((row) => ({

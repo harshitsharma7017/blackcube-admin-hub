@@ -6,6 +6,8 @@ import {
   getSummary,
   listRecords,
   updateRecord,
+  bulkDeleteRecords,
+  bulkUpdateRecords,
 } from "@/services/records-service";
 
 export const recordKeys = {
@@ -53,6 +55,23 @@ export function useCommitImport() {
   const invalidate = useInvalidateRecords();
   return useMutation({
     mutationFn: (rows: RecordInput[]) => commitImport(rows),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useBulkDeleteRecords() {
+  const invalidate = useInvalidateRecords();
+  return useMutation({
+    mutationFn: (ids: string[]) => bulkDeleteRecords(ids),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useBulkUpdateRecords() {
+  const invalidate = useInvalidateRecords();
+  return useMutation({
+    mutationFn: ({ ids, updates }: { ids: string[]; updates: Partial<RecordInput> }) =>
+      bulkUpdateRecords(ids, updates),
     onSuccess: () => invalidate(),
   });
 }

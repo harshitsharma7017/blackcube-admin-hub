@@ -4,6 +4,8 @@ import { Link } from "@tanstack/react-router";
 import { UploadCloud } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
+import { BulkDeleteDialog } from "@/components/manage-data/BulkDeleteDialog";
+import { BulkUpdateDialog } from "@/components/manage-data/BulkUpdateDialog";
 import { DeleteRecordDialog } from "@/components/manage-data/DeleteRecordDialog";
 import { EditRecordDialog } from "@/components/manage-data/EditRecordDialog";
 import { FiltersToolbar } from "@/components/manage-data/FiltersToolbar";
@@ -79,6 +81,8 @@ function ManageDataPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<DataRecord | null>(null);
   const [deleting, setDeleting] = useState<DataRecord | null>(null);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const setSearch = (patch: Partial<ManageDataSearch>) => {
     void navigate({
@@ -180,7 +184,17 @@ function ManageDataPage() {
               ? "Loading records…"
               : `${total} record${total === 1 ? "" : "s"} found`}
           </p>
-          {selected.size > 0 ? <p>{selected.size} selected</p> : null}
+          {selected.size > 0 ? (
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+              <span className="font-medium text-foreground">{selected.size} selected</span>
+              <Button variant="outline" size="sm" onClick={() => setBulkUpdating(true)}>
+                Bulk Update
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => setBulkDeleting(true)}>
+                Bulk Delete
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         <RecordsTable
@@ -211,6 +225,20 @@ function ManageDataPage() {
 
       <EditRecordDialog record={editing} onOpenChange={(open) => !open && setEditing(null)} />
       <DeleteRecordDialog record={deleting} onOpenChange={(open) => !open && setDeleting(null)} />
+
+      <BulkUpdateDialog
+        isOpen={bulkUpdating}
+        onOpenChange={setBulkUpdating}
+        selectedIds={selected}
+        onSuccess={() => setSelected(new Set())}
+      />
+
+      <BulkDeleteDialog
+        isOpen={bulkDeleting}
+        onOpenChange={setBulkDeleting}
+        selectedIds={selected}
+        onSuccess={() => setSelected(new Set())}
+      />
     </AppShell>
   );
 }
