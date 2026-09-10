@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { RotateCcw, Search } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +31,23 @@ export function FiltersToolbar({
   onReset: () => void;
   hasActiveFilters: boolean;
 }) {
+  const [localQ, setLocalQ] = useState(value.q);
+  const debouncedQ = useDebounce(localQ, 400);
+
+  // Sync prop -> local state (e.g. when reset or changed externally)
+  useEffect(() => {
+    if (value.q !== debouncedQ) {
+      setLocalQ(value.q);
+    }
+  }, [value.q, debouncedQ]);
+
+  // Sync debounced local state -> prop
+  useEffect(() => {
+    if (debouncedQ !== value.q) {
+      onChange({ q: debouncedQ });
+    }
+  }, [debouncedQ, value.q, onChange]);
+
   return (
     <section
       aria-label="Search and filters"
@@ -45,9 +64,9 @@ export function FiltersToolbar({
             <Input
               id="search"
               type="search"
-              value={value.q}
+              value={localQ}
               placeholder="Name, email or phone"
-              onChange={(e) => onChange({ q: e.target.value })}
+              onChange={(e) => setLocalQ(e.target.value)}
               className="pl-9"
             />
           </div>
