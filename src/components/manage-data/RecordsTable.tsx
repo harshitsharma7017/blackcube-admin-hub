@@ -9,9 +9,16 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -64,6 +71,7 @@ interface RecordsTableProps {
   sortBy?: SortableField;
   sortOrder?: "asc" | "desc";
   onSort?: (field: SortableField) => void;
+  isAdmin?: boolean;
 }
 
 function StateBlock({
@@ -104,6 +112,7 @@ export function RecordsTable(props: RecordsTableProps) {
     sortBy,
     sortOrder,
     onSort,
+    isAdmin = false,
   } = props;
 
   const allSelected = records.length > 0 && records.every((r) => selected.has(r.id));
@@ -154,12 +163,14 @@ export function RecordsTable(props: RecordsTableProps) {
           <TableHeader>
             <TableRow className="bg-muted/60">
               <TableHead className="w-10">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={onToggleAll}
-                  aria-label="Select all records on this page"
-                  disabled={isLoading || records.length === 0}
-                />
+                {isAdmin && (
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={onToggleAll}
+                    aria-label="Select all records on this page"
+                    disabled={isLoading || records.length === 0}
+                  />
+                )}
               </TableHead>
               <TableHead className="w-12 whitespace-nowrap text-xs font-semibold uppercase tracking-wide">
                 S.N.
@@ -200,7 +211,7 @@ export function RecordsTable(props: RecordsTableProps) {
                   </TableHead>
                 );
               })}
-              <TableHead className="w-20 whitespace-nowrap text-xs font-semibold uppercase tracking-wide">
+              <TableHead className="w-20 whitespace-nowrap text-xs font-semibold uppercase tracking-wide sticky right-0 bg-muted/95 backdrop-blur-sm shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
                 Action
               </TableHead>
             </TableRow>
@@ -222,11 +233,13 @@ export function RecordsTable(props: RecordsTableProps) {
                     data-state={selected.has(record.id) ? "selected" : undefined}
                   >
                     <TableCell>
-                      <Checkbox
-                        checked={selected.has(record.id)}
-                        onCheckedChange={() => onToggle(record.id)}
-                        aria-label={`Select ${record.name}`}
-                      />
+                      {isAdmin && (
+                        <Checkbox
+                          checked={selected.has(record.id)}
+                          onCheckedChange={() => onToggle(record.id)}
+                          aria-label={`Select ${record.name}`}
+                        />
+                      )}
                     </TableCell>
                     <TableCell className="tabular-nums text-muted-foreground">
                       {startIndex + index + 1}
@@ -250,26 +263,27 @@ export function RecordsTable(props: RecordsTableProps) {
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDate(record.createdAt)}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onEdit(record)}
-                          aria-label={`Update ${record.name}`}
-                        >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onDelete(record)}
-                          aria-label={`Delete ${record.name}`}
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                        </Button>
-                      </div>
+                    <TableCell className="sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" aria-label="Open menu">
+                            <MoreHorizontal className="size-4" aria-hidden="true" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEdit(record)}>
+                            <Pencil className="mr-2 size-4" aria-hidden="true" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => onDelete(record)}
+                            className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                          >
+                            <Trash2 className="mr-2 size-4" aria-hidden="true" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

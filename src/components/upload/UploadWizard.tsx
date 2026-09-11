@@ -134,9 +134,13 @@ export function UploadWizard() {
   };
 
   const confirmImport = async () => {
-    if (!validation) return;
+    if (!validation || !parsed) return;
     try {
-      const result = await commit.mutateAsync(validation.validRows);
+      const result = await commit.mutateAsync({
+        fileName: parsed.fileName,
+        totalRows: validation.totalRows,
+        validRows: validation.validRows,
+      });
       setImported(result.inserted);
       setStep(3);
       toast.success(`${result.inserted} records imported`);

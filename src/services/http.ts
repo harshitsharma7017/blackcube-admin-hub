@@ -9,6 +9,7 @@ export const http = axios.create({
   baseURL: import.meta.env["VITE_API_BASE_URL"] ?? "/api",
   headers: { "Content-Type": "application/json" },
   timeout: 20_000,
+  withCredentials: true,
 });
 
 /** Normalises any transport failure into a readable message. */

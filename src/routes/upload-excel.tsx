@@ -1,8 +1,24 @@
+import { redirect } from "@tanstack/react-router";
+import { authKeys } from "@/features/auth/queries";
+import { getMe } from "@/services/auth-service";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { UploadWizard } from "@/components/upload/UploadWizard";
 
 export const Route = createFileRoute("/upload-excel")({
+  beforeLoad: async ({ context: { queryClient } }) => {
+    // Skip auth check during SSR — the server cannot access browser HttpOnly cookies.
+    // Auth will be verified client-side after hydration.
+    if (typeof window === "undefined") return;
+    try {
+      await queryClient.ensureQueryData({
+        queryKey: authKeys.currentUser,
+        queryFn: getMe,
+      });
+    } catch {
+      throw redirect({ to: "/sign-in", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Upload Excel — BlackCube Admin Panel" },

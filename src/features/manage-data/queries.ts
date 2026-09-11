@@ -8,6 +8,9 @@ import {
   updateRecord,
   bulkDeleteRecords,
   bulkUpdateRecords,
+  getImportHistory,
+  getAuditLogs,
+  exportRecords,
 } from "@/services/records-service";
 
 export const recordKeys = {
@@ -37,41 +40,104 @@ export function useInvalidateRecords() {
 
 export function useUpdateRecord() {
   const invalidate = useInvalidateRecords();
+  const invalidateAudit = useInvalidateAuditLog();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: RecordInput }) => updateRecord(id, input),
-    onSuccess: () => invalidate(),
+    onSuccess: () => {
+      invalidate();
+      invalidateAudit();
+    },
   });
 }
 
 export function useDeleteRecord() {
   const invalidate = useInvalidateRecords();
+  const invalidateAudit = useInvalidateAuditLog();
   return useMutation({
     mutationFn: (id: string) => deleteRecord(id),
-    onSuccess: () => invalidate(),
+    onSuccess: () => {
+      invalidate();
+      invalidateAudit();
+    },
   });
 }
 
 export function useCommitImport() {
   const invalidate = useInvalidateRecords();
+  const invalidateHistory = useInvalidateImportHistory();
+  const invalidateAudit = useInvalidateAuditLog();
   return useMutation({
-    mutationFn: (rows: RecordInput[]) => commitImport(rows),
-    onSuccess: () => invalidate(),
+    mutationFn: (data: { fileName: string; totalRows: number; validRows: RecordInput[] }) =>
+      commitImport(data),
+    onSuccess: () => {
+      invalidate();
+      invalidateHistory();
+      invalidateAudit();
+    },
   });
 }
 
 export function useBulkDeleteRecords() {
   const invalidate = useInvalidateRecords();
+  const invalidateAudit = useInvalidateAuditLog();
   return useMutation({
     mutationFn: (ids: string[]) => bulkDeleteRecords(ids),
-    onSuccess: () => invalidate(),
+    onSuccess: () => {
+      invalidate();
+      invalidateAudit();
+    },
   });
 }
 
 export function useBulkUpdateRecords() {
   const invalidate = useInvalidateRecords();
+  const invalidateAudit = useInvalidateAuditLog();
   return useMutation({
     mutationFn: ({ ids, updates }: { ids: string[]; updates: Partial<RecordInput> }) =>
       bulkUpdateRecords(ids, updates),
-    onSuccess: () => invalidate(),
+    onSuccess: () => {
+      invalidate();
+      invalidateAudit();
+    },
   });
+}
+
+export function useExportRecords() {
+  const invalidateAudit = useInvalidateAuditLog();
+  return useMutation({
+    mutationFn: ({ query, format }: { query: ListRecordsQuery; format: "csv" | "xlsx" }) =>
+      exportRecords(query, format),
+    onSuccess: () => {
+      invalidateAudit();
+    },
+  });
+}
+
+export const historyKeys = {
+  importHistory: (page: number) => ["importHistory", page] as const,
+  auditLog: (page: number) => ["auditLog", page] as const,
+};
+
+export const importHistoryQuery = (page: number, pageSize: number = 10) =>
+  queryOptions({
+    queryKey: historyKeys.importHistory(page),
+    queryFn: () => getImportHistory(page, pageSize),
+    staleTime: 10_000,
+  });
+
+export const auditLogQuery = (page: number, pageSize: number = 10) =>
+  queryOptions({
+    queryKey: historyKeys.auditLog(page),
+    queryFn: () => getAuditLogs(page, pageSize),
+    staleTime: 10_000,
+  });
+
+export function useInvalidateAuditLog() {
+  const queryClient = useQueryClient();
+  return () => queryClient.invalidateQueries({ queryKey: ["auditLog"] });
+}
+
+export function useInvalidateImportHistory() {
+  const queryClient = useQueryClient();
+  return () => queryClient.invalidateQueries({ queryKey: ["importHistory"] });
 }

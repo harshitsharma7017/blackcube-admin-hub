@@ -142,3 +142,28 @@ export class ApiError extends Error {
     this.status = status;
   }
 }
+
+/** ---- History & Audit ---- */
+
+export type ImportStatus = "Completed" | "Completed with Errors" | "Failed";
+
+export interface ImportHistoryEntry {
+  _id: string;
+  fileName: string;
+  totalRows: number;
+  importedRows: number;
+  failedRows: number;
+  status: ImportStatus;
+  createdAt: string;
+}
+
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "BULK_UPDATE" | "BULK_DELETE" | "IMPORT";
+
+export interface AuditLogEntry {
+  _id: string;
+  action: AuditAction;
+  entityType: string;
+  entityId: string;
+  details: Record<string, unknown> | null;
+  createdAt: string;
+}

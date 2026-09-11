@@ -1,3 +1,6 @@
+import { redirect } from "@tanstack/react-router";
+import { authKeys } from "@/features/auth/queries";
+import { getMe } from "@/services/auth-service";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -18,6 +21,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { summaryQuery, recordsQuery } from "@/features/manage-data/queries";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: async ({ context: { queryClient } }) => {
+    // Skip auth check during SSR — the server cannot access browser HttpOnly cookies.
+    // Auth will be verified client-side after hydration.
+    if (typeof window === "undefined") return;
+    try {
+      await queryClient.ensureQueryData({
+        queryKey: authKeys.currentUser,
+        queryFn: getMe,
+      });
+    } catch {
+      throw redirect({ to: "/sign-in", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Dashboard — BlackCube Admin Panel" },

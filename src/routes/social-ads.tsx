@@ -1,9 +1,25 @@
+import { redirect } from "@tanstack/react-router";
+import { authKeys } from "@/features/auth/queries";
+import { getMe } from "@/services/auth-service";
 import { createFileRoute } from "@tanstack/react-router";
 import { Megaphone } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/social-ads")({
+  beforeLoad: async ({ context: { queryClient } }) => {
+    // Skip auth check during SSR — the server cannot access browser HttpOnly cookies.
+    // Auth will be verified client-side after hydration.
+    if (typeof window === "undefined") return;
+    try {
+      await queryClient.ensureQueryData({
+        queryKey: authKeys.currentUser,
+        queryFn: getMe,
+      });
+    } catch {
+      throw redirect({ to: "/sign-in", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Social & Ads — BlackCube Admin Panel" },

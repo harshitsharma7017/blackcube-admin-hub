@@ -10,7 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuditLogRouteImport } from './routes/audit-log'
+import { Route as ImportHistoryRouteImport } from './routes/import-history'
 import { Route as ManageDataRouteImport } from './routes/manage-data'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SocialAdsRouteImport } from './routes/social-ads'
 import { Route as UploadExcelRouteImport } from './routes/upload-excel'
 
@@ -19,9 +23,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuditLogRoute = AuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImportHistoryRoute = ImportHistoryRouteImport.update({
+  id: '/import-history',
+  path: '/import-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ManageDataRoute = ManageDataRouteImport.update({
   id: '/manage-data',
   path: '/manage-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SocialAdsRoute = SocialAdsRouteImport.update({
@@ -37,34 +61,75 @@ const UploadExcelRoute = UploadExcelRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
+  '/import-history': typeof ImportHistoryRoute
   '/manage-data': typeof ManageDataRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/social-ads': typeof SocialAdsRoute
   '/upload-excel': typeof UploadExcelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
+  '/import-history': typeof ImportHistoryRoute
   '/manage-data': typeof ManageDataRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/social-ads': typeof SocialAdsRoute
   '/upload-excel': typeof UploadExcelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
+  '/import-history': typeof ImportHistoryRoute
   '/manage-data': typeof ManageDataRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/social-ads': typeof SocialAdsRoute
   '/upload-excel': typeof UploadExcelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/manage-data' | '/social-ads' | '/upload-excel'
+  fullPaths:
+    | '/'
+    | '/audit-log'
+    | '/import-history'
+    | '/manage-data'
+    | '/sign-in'
+    | '/sign-up'
+    | '/social-ads'
+    | '/upload-excel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/manage-data' | '/social-ads' | '/upload-excel'
-  id: '__root__' | '/' | '/manage-data' | '/social-ads' | '/upload-excel'
+  to:
+    | '/'
+    | '/audit-log'
+    | '/import-history'
+    | '/manage-data'
+    | '/sign-in'
+    | '/sign-up'
+    | '/social-ads'
+    | '/upload-excel'
+  id:
+    | '__root__'
+    | '/'
+    | '/audit-log'
+    | '/import-history'
+    | '/manage-data'
+    | '/sign-in'
+    | '/sign-up'
+    | '/social-ads'
+    | '/upload-excel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditLogRoute: typeof AuditLogRoute
+  ImportHistoryRoute: typeof ImportHistoryRoute
   ManageDataRoute: typeof ManageDataRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   SocialAdsRoute: typeof SocialAdsRoute
   UploadExcelRoute: typeof UploadExcelRoute
 }
@@ -78,11 +143,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audit-log': {
+      id: '/audit-log'
+      path: '/audit-log'
+      fullPath: '/audit-log'
+      preLoaderRoute: typeof AuditLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/import-history': {
+      id: '/import-history'
+      path: '/import-history'
+      fullPath: '/import-history'
+      preLoaderRoute: typeof ImportHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/manage-data': {
       id: '/manage-data'
       path: '/manage-data'
       fullPath: '/manage-data'
       preLoaderRoute: typeof ManageDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/social-ads': {
@@ -104,7 +197,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditLogRoute: AuditLogRoute,
+  ImportHistoryRoute: ImportHistoryRoute,
   ManageDataRoute: ManageDataRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   SocialAdsRoute: SocialAdsRoute,
   UploadExcelRoute: UploadExcelRoute,
 }

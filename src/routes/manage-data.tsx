@@ -1,8 +1,12 @@
+import { redirect } from "@tanstack/react-router";
+import { authKeys } from "@/features/auth/queries";
+import { getMe } from "@/services/auth-service";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { UploadCloud } from "lucide-react";
+import { UploadCloud, Download, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { BulkDeleteDialog } from "@/components/manage-data/BulkDeleteDialog";
 import { BulkUpdateDialog } from "@/components/manage-data/BulkUpdateDialog";
@@ -13,8 +17,15 @@ import { RecordsTable } from "@/components/manage-data/RecordsTable";
 import { SummaryCards } from "@/components/manage-data/SummaryCards";
 import { TablePagination } from "@/components/manage-data/TablePagination";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { recordsQuery, summaryQuery } from "@/features/manage-data/queries";
+import { recordsQuery, summaryQuery, useExportRecords } from "@/features/manage-data/queries";
+import { useCurrentUser } from "@/features/auth/queries";
 import { toApiMessage } from "@/services/http";
 import {
   CATEGORY_TABS,
@@ -51,6 +62,19 @@ const DEFAULTS: ManageDataSearch = {
 };
 
 export const Route = createFileRoute("/manage-data")({
+  beforeLoad: async ({ context: { queryClient } }) => {
+    // Skip auth check during SSR — the server cannot access browser HttpOnly cookies.
+    // Auth will be verified client-side after hydration.
+    if (typeof window === "undefined") return;
+    try {
+      await queryClient.ensureQueryData({
+        queryKey: authKeys.currentUser,
+        queryFn: getMe,
+      });
+    } catch {
+      throw redirect({ to: "/sign-in", replace: true });
+    }
+  },
   validateSearch: (search: Record<string, unknown>): ManageDataSearch => {
     const tab = String(search["tab"] ?? "all");
     return {
@@ -83,6 +107,8 @@ export const Route = createFileRoute("/manage-data")({
 });
 
 function ManageDataPage() {
+  const { data: user } = useCurrentUser();
+  const isAdmin = user?.role === "ADMIN";
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -118,6 +144,7 @@ function ManageDataPage() {
     }),
   );
   const summary = useQuery(summaryQuery());
+  const exportMutation = useExportRecords();
 
   const records = listQuery.data?.items ?? [];
   const total = listQuery.data?.total ?? 0;
@@ -161,17 +188,70 @@ function ManageDataPage() {
     setSearch({ sort: field, order: nextOrder, page: 1 });
   };
 
+  const handleExport = (format: "csv" | "xlsx") => {
+    if (total === 0) {
+      toast.error("No records available to export.");
+      return;
+    }
+
+    const query = {
+      page: search.page,
+      pageSize: PAGE_SIZE,
+      search: search.q,
+      type: activeType as RecordType | null,
+      linkStatus: search.link as LinkStatus | "all",
+      downloadStatus: search.download as DownloadStatus | "all",
+      dateAdded: search.date as "all" | "today" | "7d" | "30d",
+      sortBy: (search.sort as SortableField) || undefined,
+      sortOrder: (search.order as "asc" | "desc") || undefined,
+    };
+
+    const loadingId = toast.loading(`Exporting records as ${format.toUpperCase()}...`);
+    exportMutation.mutate(
+      { query, format },
+      {
+        onSuccess: () => {
+          toast.success(`${format.toUpperCase()} file exported successfully.`, { id: loadingId });
+        },
+        onError: (err) => {
+          toast.error(err instanceof Error ? err.message : "Export failed", { id: loadingId });
+        },
+      },
+    );
+  };
+
   return (
     <AppShell
       title="Manage Data"
       description="Browse, search and maintain every record imported from your spreadsheets."
       actions={
-        <Button asChild>
-          <Link to="/upload-excel">
-            <UploadCloud className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Upload Excel</span>
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={exportMutation.isPending}>
+                {exportMutation.isPending ? (
+                  <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Download className="mr-2 size-4" aria-hidden="true" />
+                )}
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport("csv")}>Export as CSV</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("xlsx")}>
+                Export as Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button asChild>
+            <Link to="/upload-excel">
+              <UploadCloud className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Upload Excel</span>
+            </Link>
+          </Button>
+        </div>
       }
     >
       <div className="flex flex-col gap-6">
@@ -202,7 +282,7 @@ function ManageDataPage() {
               ? "Loading records…"
               : `${total} record${total === 1 ? "" : "s"} found`}
           </p>
-          {selected.size > 0 ? (
+          {isAdmin && selected.size > 0 ? (
             <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
               <span className="font-medium text-foreground">{selected.size} selected</span>
               <Button variant="outline" size="sm" onClick={() => setBulkUpdating(true)}>
@@ -232,6 +312,7 @@ function ManageDataPage() {
           sortBy={search.sort as SortableField}
           sortOrder={search.order as "asc" | "desc"}
           onSort={handleSort}
+          isAdmin={isAdmin}
         />
 
         <TablePagination
