@@ -89,7 +89,10 @@ export function AppShell({ title, description, actions, children }: AppShellProp
                   className="text-destructive focus:text-destructive cursor-pointer"
                   onClick={() =>
                     logoutMutation.mutate(undefined, {
-                      onSettled: () => navigate({ to: "/sign-in" }),
+                      onSettled: () => {
+                        localStorage.removeItem("auth_token");
+                        navigate({ to: "/sign-in" });
+                      },
                     })
                   }
                 >
@@ -134,7 +137,10 @@ export function AppShell({ title, description, actions, children }: AppShellProp
                         className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() =>
                           logoutMutation.mutate(undefined, {
-                            onSettled: () => navigate({ to: "/sign-in" }),
+                            onSettled: () => {
+                              localStorage.removeItem("auth_token");
+                              navigate({ to: "/sign-in" });
+                            },
                           })
                         }
                       >

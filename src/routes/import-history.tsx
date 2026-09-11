@@ -27,6 +27,9 @@ export const Route = createFileRoute("/import-history")({
     // Skip auth check during SSR — the server cannot access browser HttpOnly cookies.
     // Auth will be verified client-side after hydration.
     if (typeof window === "undefined") return;
+    if (!localStorage.getItem("auth_token")) {
+      throw redirect({ to: "/sign-in", replace: true });
+    }
     try {
       await queryClient.ensureQueryData({
         queryKey: authKeys.currentUser,

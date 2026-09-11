@@ -11,8 +11,9 @@ export async function signUp(data: any): Promise<void> {
   await http.post("/auth/signup", data);
 }
 
-export async function signIn(data: any): Promise<void> {
-  await http.post("/auth/login", data);
+export async function signIn(data: any): Promise<{ token: string }> {
+  const res = await http.post("/auth/login", data);
+  return { token: res.data.data.token };
 }
 
 export async function logout(): Promise<void> {

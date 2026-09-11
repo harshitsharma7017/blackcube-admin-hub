@@ -32,7 +32,8 @@ function SignInPage() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     loginMutation.mutate(values, {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
+        localStorage.setItem("auth_token", data.token);
         toast.success("Signed in successfully");
         navigate({ to: "/" });
       },

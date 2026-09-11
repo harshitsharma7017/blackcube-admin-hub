@@ -15,6 +15,16 @@ export const http = axios.create({
   withCredentials: true,
 });
 
+http.interceptors.request.use((config) => {
+  if (!isServer) {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 /** Normalises any transport failure into a readable message. */
 export function toApiMessage(error: unknown, fallback = "Something went wrong"): string {
   if (axios.isAxiosError(error)) {
