@@ -25,6 +25,19 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (!isServer && error.response && error.response.status === 401) {
+      localStorage.removeItem("auth_token");
+      if (window.location.pathname !== "/sign-in") {
+        window.location.href = "/sign-in";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 /** Normalises any transport failure into a readable message. */
 export function toApiMessage(error: unknown, fallback = "Something went wrong"): string {
   if (axios.isAxiosError(error)) {
