@@ -1,4 +1,4 @@
-export function renderErrorPage(): string {
+export function renderErrorPage(errorMsg?: string): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -20,6 +20,9 @@ export function renderErrorPage(): string {
     <div class="card">
       <h1>This page didn't load</h1>
       <p>Something went wrong on our end. You can try refreshing or head back home.</p>
+      <div style="text-align: left; background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem; font-family: monospace; font-size: 0.875rem;">
+        ${errorMsg || "Unknown Error"}
+      </div>
       <div class="actions">
         <button class="primary" onclick="location.reload()">Try again</button>
         <a class="secondary" href="/">Go home</a>
