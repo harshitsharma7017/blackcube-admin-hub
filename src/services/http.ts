@@ -5,8 +5,11 @@ import axios from "axios";
  * The mock service in `records-service.ts` implements the identical contract,
  * so switching over is a per-function body swap — no component changes.
  */
+const isServer = typeof window === "undefined";
+const defaultBaseUrl = isServer ? "http://localhost:8082/api" : "/api";
+
 export const http = axios.create({
-  baseURL: import.meta.env["VITE_API_BASE_URL"] ?? "/api",
+  baseURL: import.meta.env["VITE_API_BASE_URL"] ?? defaultBaseUrl,
   headers: { "Content-Type": "application/json" },
   timeout: 20_000,
   withCredentials: true,
